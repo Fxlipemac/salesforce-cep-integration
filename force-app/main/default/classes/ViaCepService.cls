@@ -1,4 +1,5 @@
 public with sharing class ViaCepService {
+    @AuraEnabled
     public static Map<String, String> buscarEndereco(String cep) {
         Http http = new Http();
         HttpRequest request = new HttpRequest();
