@@ -1,18 +1,55 @@
-# Salesforce DX Project: Next Steps
+# Salesforce CEP Integration
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+Integração REST no Salesforce que consome a API pública [ViaCEP](https://viacep.com.br) para busca e preenchimento automático de endereços a partir de um CEP.
 
-## How Do You Plan to Deploy Your Changes?
+## Demonstração
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+O usuário digita um CEP no componente LWC e clica em **Buscar** — o endereço é retornado pela API e exibido automaticamente na tela.
 
-## Configure Your Salesforce DX Project
+## Tecnologias
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+- **Apex** — consumo da API REST externa e desserialização do JSON
+- **LWC** — interface do usuário com campo de CEP e exibição do endereço
+- **REST API** — integração com a API pública ViaCEP
+- **Git** — versionamento com fluxo de branches e Pull Requests
 
-## Read All About It
+## Arquitetura
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+LWC (cepForm)
+↓ usuário digita o CEP e clica em Buscar
+Apex (ViaCepService)
+↓ monta requisição HTTP GET
+API ViaCEP (https://viacep.com.br)
+↓ retorna JSON com dados do endereço
+Apex (ViaCepService)
+↓ desserializa e filtra os campos
+LWC (cepForm)
+↓ exibe o endereço preenchido automaticamente
+
+## Estrutura do Projeto
+
+force-app/main/default/
+├── classes/
+│   ├── ViaCepService.cls         # Classe Apex de integração REST
+│   ├── ViaCepServiceMock.cls     # Mock para testes unitários
+│   └── ViaCepServiceTest.cls     # Testes unitários (100% de cobertura)
+└── lwc/
+└── cepForm/                  # Componente LWC de busca de CEP
+
+## Testes
+
+Os testes unitários cobrem 100% do código da classe `ViaCepService`, utilizando `HttpCalloutMock` para simular as respostas da API sem realizar chamadas externas reais.
+
+```bash
+sf apex run test --class-names ViaCepServiceTest --target-org dev-org --result-format human
+```
+
+## Como executar localmente
+
+```bash
+# Autenticar na org
+sf org login web --alias dev-org
+
+# Deploy para a org
+sf project deploy start --source-dir force-app/ --target-org dev-org
+```
